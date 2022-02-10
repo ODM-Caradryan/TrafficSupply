@@ -4,14 +4,13 @@ import pickle
 import random
 import time
 import json
-import torch
-import torch.optim as optim
-import torch.nn.functional as F
+#import torch
+#import torch.optim as optim
+#import torch.nn.functional as F
 from multiprocessing import Process, Manager
 import networkx as nx
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import citypb
+# import citypb
 
 class Wrapper(object):
     def __init__(self,
@@ -178,6 +177,49 @@ class Wrapper(object):
                 engine.set_ttl_phase(intersection, (int(engine.get_current_time()) // 20) % 4 + 1)
             engine.next_step()
             step += 1
+            
+    def generate_flow(self, target_file=None, beta=0.5):
+        if self.flow_file == None:
+            return
+        
+        with open(self.flow_file,'r') as f:
+            t = open(target_file, 'w')
+            lines = f.readlines() 
+            flow_num = int(lines[0].rstrip('\n').split(' ')[0])
+            tot = 0
+            for flow_idx in range(flow_num):
+                time_info = lines[flow_idx * 3 + 1].rstrip('\n').split(' ')
+                length_info = lines[flow_idx * 3 + 2]
+                path_info = lines[flow_idx * 3 + 3]
+                if '' in time_info:
+                    time_info.remove('')
+                start_time = int(time_info[0])
+                end_time = int(time_info[1])
+                cycle_time = int(time_info[2])
+                veh_num = int((end_time - start_time)/cycle_time)
+                
+                random.seed(time.time())
+                base = random.randint(0, 5) * 600
+                start = base
+                end = start + 1
+                for veh_idx in range(veh_num):
+                    perturb = random.randint(-int(cycle_time*beta), int(cycle_time*beta))
+                    t.write('{} {} {}\n'.
+                        format(start+perturb, end+perturb, self.time))
+                    t.write(length_info)
+                    t.write(path_info)
+                    start += cycle_time
+                    end += cycle_time
+                    tot += 1
+            
+                    
+            t.close()
+            print("total num:{}".format(tot))
+                    
+        
+        
+        
+        
 
         
     
