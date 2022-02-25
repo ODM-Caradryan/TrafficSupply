@@ -14,11 +14,12 @@ class FixedTimeAgent():
         self.last_change_step = {}
         self.agent_list = []
         self.phase_passablelane = {}
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
-        self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
-                                   [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
-                                   [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
-                                   [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
+        # self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        self.phase_lane_map_in = [[2, 1], [5, 4], [8, 7], [11, 10]]
+        #self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
+        #                           [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
+        #                           [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
+        #                           [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
         # # print("MAX PRESSURE")
     ################################
     # don't modify this function.
@@ -39,18 +40,22 @@ class FixedTimeAgent():
 
 
     def get_action(self, lane_vehicle_num, cur_time, fixed_time):
-        unavailable_phases = self.get_unavailable_phases(lane_vehicle_num)
+        # unavailable_phases = self.get_unavailable_phases(lane_vehicle_num)
         # if len(unavailable_phases) > 0:
         #     # print("unavailable_phases: ", unavailable_phases)
-        available_phases = list(set(list(range(1, 9))) - set(unavailable_phases))
-        action_id = available_phases[(cur_time / fixed_time) % len(available_phases)]
+        
+        # available_phases = list(set(list(range(1, 9))) - set(unavailable_phases))
+        available_phases = [5, 6, 7, 8]
+        action_id = available_phases[int(cur_time / fixed_time) % len(available_phases)]
         # # print(max_pressure_id)
+        # print(action_id)
         return action_id
 
 
-
+    '''
     def get_unavailable_phases(self, lane_vehicle_num):
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        # self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        self.phase_lane_map_in = [[2, 1], [5, 4], [8, 7], [11, 10]]
         unavailable_phases = []
         not_exist_lanes = []
         for i in range(1, 25):
@@ -58,13 +63,14 @@ class FixedTimeAgent():
                 not_exist_lanes.append(i)
         for lane in not_exist_lanes:
             for phase_id, in_lanes in enumerate(self.phase_lane_map_in):
-                phase_id += 1
+                # phase_id += 1
+                phase_id += 5
                 if lane in in_lanes and phase_id not in unavailable_phases:
                     unavailable_phases.append(phase_id)
 
         return unavailable_phases
         # return [5, 6, 7, 8]
-
+    '''
 
     def act(self, obs):
         """ !!! MUST BE OVERRIDED !!!
@@ -118,12 +124,15 @@ class MPAgent():
         self.last_change_step = {}
         self.agent_list = []
         self.phase_passablelane = {}
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
-        self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
-                                   [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
-                                   [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
-                                   [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
+        #self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        #self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
+        #                           [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
+        #                           [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
+        #                           [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
         # # print("MAX PRESSURE")
+        self.phase_lane_map_in = [[2, 1], [5, 4], [8, 7], [11, 10]]
+        self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
+                                   [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24]]
     ################################
     # don't modify this function.
     # agent_list is a list of agent_id
@@ -146,7 +155,7 @@ class MPAgent():
 
     def get_phase_pressures(self, lane_vehicle_num):
         pressures = []
-        for i in range(8):
+        for i in range(4):   # use 4-7(5-8)
             in_lanes = self.phase_lane_map_in[i]
             out_lanes = self.phase_lane_map_out[i]
             pressure = 0
@@ -159,22 +168,27 @@ class MPAgent():
         return pressures
 
     def get_action(self, lane_vehicle_num):
+        # zero all non-existing phases
+        lane_vehicle_num = [x if x >= 0 else 0 for x in lane_vehicle_num]
+            
         pressures = self.get_phase_pressures(lane_vehicle_num)
-        unavailable_phases = self.get_unavailable_phases(lane_vehicle_num)
+        # unavailable_phases = self.get_unavailable_phases(lane_vehicle_num)
         # if len(unavailable_phases) > 0:
         #     # print("unavailable_phases: ", unavailable_phases)
 
-        max_pressure_id = np.argmax(pressures) + 1
+        max_pressure_id = np.argmax(pressures) + 5  # turn the idx to phase id (use 5-8)
+        '''
         while (max_pressure_id in unavailable_phases):
             pressures[max_pressure_id - 1] -= 999999
             max_pressure_id = np.argmax(pressures) + 1
+        '''
         # # print(max_pressure_id)
         return max_pressure_id
 
 
 
     def get_unavailable_phases(self, lane_vehicle_num):
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        self.phase_lane_map_in = [[2, 1], [5, 4], [8, 7], [11, 10]]
         unavailable_phases = []
         not_exist_lanes = []
         for i in range(1, 25):
@@ -182,7 +196,8 @@ class MPAgent():
                 not_exist_lanes.append(i)
         for lane in not_exist_lanes:
             for phase_id, in_lanes in enumerate(self.phase_lane_map_in):
-                phase_id += 1
+                # phase_id += 1
+                phase_id += 5
                 if lane in in_lanes and phase_id not in unavailable_phases:
                     unavailable_phases.append(phase_id)
 
@@ -242,25 +257,39 @@ class FormulaAgent():
         self.last_change_step = {}
         self.agent_list = []
         self.phase_passablelane = {}
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        #self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
+        #self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
+        #                           [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
+        #                           [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
+        #                           [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
+        # # print("MAX PRESSURE")
+        self.phase_lane_map_in = [[2, 1], [5, 4], [8, 7], [11, 10]]
         self.phase_lane_map_out = [[16, 17, 18, 22, 23, 24], [13, 14, 15, 19, 20, 21],
-                                   [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24],
-                                   [16, 17, 18, 19, 20, 21], [19, 20, 21, 22, 23, 24],
-                                   [13, 14, 15, 22, 23, 24], [13, 14, 15, 16, 17, 18]]
+                                   [13, 14, 15, 19, 20, 21], [16, 17, 18, 22, 23, 24]]
         
-        self.volumes = {}
-        self.split_end_time = 0
+        self.lane_vehicles = {}
+        self.lane_volumes = {}
+        self.init_flags = {}
+        
+        self.clock_time = 0
+        self.end_time = 0
+        
         
         # # print("MAX PRESSURE")
     ################################
     # don't modify this function.
     # agent_list is a list of agent_id
-    def load_agent_list(self,agent_list):
+    def load_agent_list(self, agent_list):
         self.agent_list = agent_list
         self.now_phase = dict.fromkeys(self.agent_list,1)
         self.last_change_step = dict.fromkeys(self.agent_list,0)
 
     def load_roadnet(self,intersections,roads,agents):
+        
+        self.intersections = intersections
+        self.roads = roads
+        self.agents = agents
+        
         # in_roads = []
         # for agent, agent_roads in agents:
         #     in_roads = agent_roads[:4]
@@ -270,120 +299,121 @@ class FormulaAgent():
         pass
 
     ################################
-
-
-    def get_phase_volumes(self, lane_vehicle_num):
-        volumes = []
-        for i in range(4, 8):
-            in_lanes = self.phase_lane_map_in[i]
-            volume = 0
-            for in_lane in in_lanes:
-                volume = lane_vehicle_num[in_lane] if volume < lane_vehicle_num[in_lane] else volume
-            volumes.append(volume)
-        # # print("pressures: ", pressures)
-        return volumes
     
-    def get_cycle_length(self, volumes, cur_time):
-        if cur_time == 0:
-            return 200 # initialize the cycle as 200s
+    def get_cycle_length(self, agent_id, phase_volume):
+        if agent_id not in self.init_flags.keys():
+            self.init_flags[agent_id] = True
+            return 300 # initialize the cycle as 300s
         
         # determine the cycle
-        total_vol =  np.sum(volumes)
+        '''
+        total_vol = np.sum(phase_volume)
         h = 2.45
         tL = 7
         PHF = 1
         vc = 1
         N = 8
 
-        max_allowed_vol = 3600 / h * PHF * vc
+        max_allowed_vol = self.end_time / h * PHF * vc
         if total_vol/max_allowed_vol > 0.95:
             cycle_length = N * tL / (1 - 0.95)
         else:
             cycle_length = N * tL / (1 - total_vol / max_allowed_vol)
+        '''
+        cycle_length = np.random.randint(180, 300)
         
-        return cycle_length
+        return cycle_length if cycle_length > 60 else 60
     
-    def round_up(self, x, min_phase_time=10, b=5):
-        round_x = (b * np.ceil(x.astype(float) / b)).astype(int)
-        round_x[np.where(round_x < min_phase_time and round_x >= 0)] = min_phase_time
-        return round_x
 
-    def get_action(self, lane_vehicle_num, cur_time, agent_id):
-        if agent_id not in self.volumes.keys():
-            self.volumes[agent_id] = np.zeros((4,))
-        
-        volumes = self.get_phase_volumes(lane_vehicle_num)
-        self.volumes[agent_id] = self.volumes[agent_id] + np.array(volumes)
-        
-        if cur_time < self.split_end_time:
-            for tmp_id, phase_time in enumerate(self.phase_split):
+    def get_action(self, agent_id):
+        if self.clock_time < self.end_time and agent_id in self.init_flags.keys():
+            for tmp_id, phase_time in enumerate(self.phase_time):
                 # an unavailable phase would be like [50, 150, 150, 200], ignored
-                if (cur_time + self.cycle_length - self.split_end_time) % self.cycle_length < phase_time:
+                if self.clock_time < phase_time:
                     # phase = phase_id + 1
                     phase = tmp_id + 5 # use 5-8
+                    self.clock_time += 1 # step
+
                     return phase
         else:            
-            # determine raw cycle length
-            self.cycle_length = self.get_cycle_length(self.volumes[agent_id], cur_time)
-            
-            if np.sum(self.volumes[agent_id]) != 0:
-                self.phase_split = np.copy(self.volumes[agent_id])\
-                          / np.sum(self.volumes[agent_id]) \
-                          * self.cycle_length
+            # determine new cycle length
+            phase_volume = self.get_phase_volume(agent_id)
+            self.end_time = self.get_cycle_length(agent_id, phase_volume)
+            # print(phase_volume, self.end_time)
+            if np.sum(phase_volume) != 0:
+                self.phase_time = np.copy(phase_volume)\
+                          / np.sum(phase_volume) \
+                          * self.end_time
             else:
-                self.phase_split = np.full(shape=(np.shape(self.volumes[agent_id])[0],),\
-                                    fill_value=1/len(self.volumes)) \
-                                    * self.cycle_length
-            self.phase_split = self.round_up(self.phase_split)
+                self.phase_time = np.full(shape=(np.shape(phase_volume)[0],),\
+                                    fill_value=1/len(phase_volume)) \
+                                    * self.end_time
+                                    
                         
             # convert the split into pdf
             for phase_id in range(1, 4):
-                self.phase_split[phase_id] = self.phase_split[phase_id] + self.phase_split[phase_id-1]
+                self.phase_time[phase_id] = self.phase_time[phase_id] + self.phase_time[phase_id-1]
             
-            self.cycle_length = self.phase_split[-1] # update cycle time
-            self.volumes[agent_id] = np.zeros((4,)) # clear the volumes record
-            self.split_end_time = cur_time + self.cycle_length # update end time
-            
+            self.lane_vehicles = {}
+            self.lane_volumes = {} # clear the volumes record
+            self.clock_time = 0
+                        
             # begin new cycle
-            for tmp_id, phase_time in enumerate(self.phase_split):
+            for tmp_id, phase_time in enumerate(self.phase_time):
                 # an unavailable phase would be like [50, 150, 150, 200], ignored
-                if (cur_time + self.cycle_length - self.split_end_time) % self.cycle_length < phase_time:
+                if self.clock_time < phase_time:
                     # phase = phase_id + 1
                     phase = tmp_id + 5 # use 5-8
+                    self.clock_time += 1
                     return phase
+                
+
+    def update_volumes(self, eng):
+        lane_vehicles = eng.get_lane_vehicles()
+
+        for lane, vehicle_list in lane_vehicles.items():
+            if lane not in self.lane_vehicles.keys():
+                self.lane_vehicles[lane] = []
+            if lane not in self.lane_volumes.keys():
+                self.lane_volumes[lane] = 0
+            for vehicle in vehicle_list:
+                if vehicle not in self.lane_vehicles[lane]:
+                    self.lane_volumes[lane] += 1
+        self.lane_vehicles = lane_vehicles
         
-
-
-    def get_unavailable_phases(self, lane_vehicle_num):
-        self.phase_lane_map_in = [[1, 7], [2, 8], [4, 10], [5, 11], [2, 1], [5, 4], [8, 7], [11, 10]]
-        unavailable_phases = []
-        not_exist_lanes = []
-        for i in range(1, 25):
-            if lane_vehicle_num[i] < 0:
-                not_exist_lanes.append(i)
-        for lane in not_exist_lanes:
-            for phase_id, in_lanes in enumerate(self.phase_lane_map_in):
-                phase_id += 1
-                if lane in in_lanes and phase_id not in unavailable_phases:
-                    unavailable_phases.append(phase_id)
-
-        return unavailable_phases
-        # return [5, 6, 7, 8]
-
-    def update_volumes(self, env):
-        pass
-
+    def get_phase_volume(self, agent):
+        agent_volume = []   # 0-23, tot 24
+        for road in self.agents[agent]:
+            if road >= 0:
+                for lane_idx in range(3):
+                    lane_id = road * 100 + lane_idx
+                    if lane_id in self.lane_volumes.keys():
+                        agent_volume.append(self.lane_volumes[lane_id])
+                    else:
+                        agent_volume.append(0)
+            else:
+                for _ in range(3):
+                    agent_volume.append(0)
+        
+        phase_volume = []
+        for phase in self.phase_lane_map_in:
+            critical_volume = 0
+            for lane in phase:  # the range of lane is from 1-24
+                critical_volume = max(critical_volume, agent_volume[lane-1])
+            phase_volume.append(critical_volume)
+                    
+        return phase_volume
+                
+        
     def act(self, obs):
         """ !!! MUST BE OVERRIDED !!!
         """
         # here obs contains all of the observations and infos
         observations = obs['observations']
         info = obs['info']
-        cur_time = obs['cur_time']
-        env = obs['env']
+        eng = obs['eng']
         actions = {}
-
-
+        
         # preprocess observations
         observations_for_agent = {}
         for key,val in observations.items():
@@ -394,18 +424,14 @@ class FormulaAgent():
             observations_for_agent[observations_agent_id][observations_feature] = val
 
         # update volumes
-        self.update_volumes(env)
+        self.update_volumes(eng)
 
         for agent in self.agent_list:
             # select the now_step
             for k,v in observations_for_agent[agent].items():
                 now_step = v[0]
                 break
-            lane_vehicle_num = observations_for_agent[agent]["lane_vehicle_num"]
-            # print("agent id: ", agent)
-            # print("lane vehicle: ", lane_vehicle_num)
-            action = self.get_action(lane_vehicle_num, cur_time, agent)
-            # print("action: ", action)
+            action = self.get_action(agent)
 
             step_diff = now_step - self.last_change_step[agent]
             if (step_diff >= self.green_sec):

@@ -4,6 +4,7 @@ import CBEngine
 import gym
 import agent.gym_cfg as gym_cfg
 from agent.agent import FormulaAgent, FixedTimeAgent, MPAgent
+from agent.mixAgent import MixAgent
 import json
 from pathlib import Path
 import time
@@ -12,17 +13,18 @@ import networkx as nx
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--setting',type=str,default='hangzhou')
+parser.add_argument('--dataset',type=str, default='round2_train')
+parser.add_argument('--policy',type=str, default='policy1')
 
 args=parser.parse_args()
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename="./main.log" )
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 gym.logger.setLevel(gym.logger.ERROR)
 
-simulator_cfg_file = './cfg/simulator.cfg'
+simulator_cfg_file = './cfg/{}.cfg'.format(args.dataset)
 gym_cfg_instance = gym_cfg.gym_cfg()
 
 def read_config(cfg_file):
@@ -459,7 +461,16 @@ if __name__ == "__main__":
     for k in observations:
         agent_id_list.append(int(k.split('_')[0]))
     agent_id_list = list(set(agent_id_list))
-    agent = TestAgent()
+    
+    MP = MPAgent()
+    FT = FixedTimeAgent(fixed_time=60)
+    Formula = FormulaAgent()
+    seed_dict = {
+        'policy1': [0, 1, 2, 0],
+        'policy2': [1, 2, 0, 1]
+    }
+    agent = MixAgent([FT, Formula, MP], seed_dict[args.policy])
+    
     # agent = FixedTimeAgent(fixed_time=60)
     agent.load_agent_list(agent_id_list)
     simulator_configs = read_config(simulator_cfg_file)
@@ -514,15 +525,14 @@ if __name__ == "__main__":
         invehicles_id[k] = []
     pre_vehicles = {}
     step = 0
-    setting = "hangzhou_scale_5"
-    suf = 'instant_volume'
     while not done:
         actions = {}
 
         all_info = {
             'observations':observations,
             'info':infos,
-            'cur_time': step
+            'cur_time': step,
+            'eng': env.eng
         }
         # logger.info("step : {}, avg_tt : {}".format(step, env.eng.get_average_travel_time()))
         actions = agent.act(all_info)
@@ -562,10 +572,8 @@ if __name__ == "__main__":
                 done = True
         step += 1
         print("{}/{}".format(step,mx_step))
-        if((step + 1) % 600 == 0):
-            nx.write_gpickle(DG, '{}_graph_processed_straight_withInOut_splitlength_{}.gpickle'.format(setting, suf))
 
-    nx.write_gpickle(DG,'{}_graph_processed_straight_withInOut_splitlength_{}.gpickle'.format(setting,suf))
+    nx.write_gpickle(DG,'{}_{}.gpickle'.format(args.dataset,args.policy))
 
 
     print('-----------------------')
